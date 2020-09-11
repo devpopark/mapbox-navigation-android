@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -57,5 +58,9 @@ public class ViewUtils {
 
   public static boolean isLandscape(@NonNull Context context) {
     return context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+  }
+
+  public static int dpToPx(Context context, int dp){
+    return Math.round(dp*(context.getResources().getDisplayMetrics().xdpi/ DisplayMetrics.DENSITY_DEFAULT));
   }
 }

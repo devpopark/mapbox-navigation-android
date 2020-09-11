@@ -61,6 +61,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import timber.log.Timber;
 
+import static com.mapbox.navigation.ui.internal.route.RouteConstants.DEFAULT_ROUTE_CLICK_PADDING_IN_DP;
 import static com.mapbox.navigation.ui.NavigationConstants.DEFAULT_VANISHING_POINT_MIN_UPDATE_INTERVAL_NANO;
 import static com.mapbox.navigation.ui.map.NavigationSymbolManager.MAPBOX_NAVIGATION_MARKER_NAME;
 
@@ -112,6 +113,7 @@ public class NavigationMapboxMap implements LifecycleObserver {
   private LocationFpsDelegate locationFpsDelegate;
   @Nullable
   private MapboxNavigation navigation;
+  private int routeClickPadding;
   private boolean vanishRouteLineEnabled;
 
   /**
@@ -192,7 +194,8 @@ public class NavigationMapboxMap implements LifecycleObserver {
         routeBelowLayerId,
         vanishRouteLineEnabled,
         DEFAULT_VANISHING_POINT_MIN_UPDATE_INTERVAL_NANO,
-        useSpecializedLocationLayer
+        useSpecializedLocationLayer,
+            DEFAULT_ROUTE_CLICK_PADDING_IN_DP
     );
   }
 
@@ -202,11 +205,13 @@ public class NavigationMapboxMap implements LifecycleObserver {
       @Nullable String routeBelowLayerId,
       boolean vanishRouteLineEnabled,
       long vanishingRouteLineUpdateIntervalNano,
-      boolean useSpecializedLocationLayer) {
+      boolean useSpecializedLocationLayer,
+      int routeClickPadding) {
     this.mapView = mapView;
     this.mapboxMap = mapboxMap;
     this.vanishRouteLineEnabled = vanishRouteLineEnabled;
     this.lifecycleOwner = lifecycleOwner;
+    this.routeClickPadding = routeClickPadding;
     initializeMapPaddingAdjustor(mapView, mapboxMap);
     initializeNavigationSymbolManager(mapView, mapboxMap);
     initializeMapLayerInteractor(mapboxMap);
@@ -1112,6 +1117,7 @@ public class NavigationMapboxMap implements LifecycleObserver {
     mapRoute = new NavigationMapRoute.Builder(mapView, map, lifecycleOwner)
         .withStyle(routeStyleRes)
         .withBelowLayer(routeBelowLayerId)
+        .withCustomRouteClickPadding(routeClickPadding)
         .withVanishRouteLineEnabled(vanishRouteLineEnabled)
         .withVanishingRouteLineUpdateIntervalNano(vanishingRouteLineUpdateIntervalNano)
         .build();
@@ -1272,6 +1278,7 @@ public class NavigationMapboxMap implements LifecycleObserver {
     private boolean vanishRouteLineEnabled = false;
     private long vanishingRouteLineUpdateIntervalNano = DEFAULT_VANISHING_POINT_MIN_UPDATE_INTERVAL_NANO;
     private boolean useSpecializedLocationLayer = false;
+    private int routeClickPadding = DEFAULT_ROUTE_CLICK_PADDING_IN_DP;
 
     /**
      * {@link NavigationMapboxMap} builder. Can be used once {@link OnMapReadyCallback}
@@ -1327,6 +1334,16 @@ public class NavigationMapboxMap implements LifecycleObserver {
       return this;
     }
 
+    /**
+     * @param padding indicates the size of the bounding box used when clicking the map to select
+     * alternative routes. The padding value is added to the the sides, top and bottom of the click
+     * click point.
+     */
+    public Builder withRouteClickPadding(int padding) {
+      this.routeClickPadding = padding;
+      return this;
+    }
+
     public NavigationMapboxMap build() {
       return new NavigationMapboxMap(
           mapView,
@@ -1335,7 +1352,8 @@ public class NavigationMapboxMap implements LifecycleObserver {
           routeBelowLayerId,
           vanishRouteLineEnabled,
           vanishingRouteLineUpdateIntervalNano,
-          useSpecializedLocationLayer
+          useSpecializedLocationLayer,
+          routeClickPadding
       );
     }
   }
